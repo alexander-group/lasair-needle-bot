@@ -50,33 +50,34 @@ class LasairNeedleBot(WebClient):
         return pd.DataFrame(new_msgs)
 
     def generate_slack_msg(self, stream_dataframe):
-
+        
         out = """
 *New NEEDLE TDE Classifications from Lasair*
 *##########################################*
 \n"""
         for i, row in stream_dataframe.iterrows():
-            host_sentence = f"This transient is {row.host_separation}\" from {row.host_table_name} {row.host_object_id}.\n"
-            if row.z != 0:
-                host_sentence += f"This host is at a {row.ztype} of {row.z}"
-                if row.ztype == "photo-z":
-                    host_sentence += f" +/- {row.zerr}"
+            host_sentence = f"\tThis transient is {row.host_separation}\" from {row.host_table_name} {row.host_object_id}.\n"
+            if row.host_z != 0:
+                host_sentence += f">\tThis host is at a {row.host_ztype} of {row.host_z}"
+                if row.host_ztype == "photo-z":
+                    host_sentence += f" +/- {row.host_zerr}"
             else:
-                host_sentence += "This host does not have a know redshift in Lasair Sherlock. Check SAGUARO!"
+                host_sentence += ">\tThis host does not have a know redshift in Lasair Sherlock. Check SAGUARO!"
 
             tns_name = ""
             if not pd.isna(row.tns_name):
-                tns_name = f"(TNS Name: <https://wis-tns.org/object/{row.tns_name}|{row.tns_prefix} {row.tns_name}>" 
+                tns_name = f"(TNS Name: <https://wis-tns.org/object/{row.tns_name}|{row.tns_classification} {row.tns_name}>)" 
             
             out += f"""
 >_Name_: {row.objectId} {tns_name}
->(ra, dec) = ({row.ramean}, {dec.ramean})
+>\t(ra, dec) = ({row.ramean}, {row.decmean})
 >{host_sentence}
 >\tP(TDE) = {row.p_tde}
+>\tP(SLSN) = {row.p_slsn}
 >\tDays since Discovery = {row.days_disc}
 >\tLatest {row.band} = {row.mag_latest}
 >\tg-r = {row.g_minus_r}
->\tAlert sent at {row.UTC}
+>\tNEEDLE Classification from {row.timestamp}
 >\t<https://lasair-ztf.lsst.ac.uk/objects/{row.objectId}/|Lasair>
 >\t<https://sand.as.arizona.edu/saguaro_tom/targets/search/?name={row.objectId}|SAGUARO>
 """
@@ -88,7 +89,7 @@ class LasairNeedleBot(WebClient):
         if not len(stream_df):
             logger.info(f"Found no new messages since the last listener run!")
             return
-        
+
         msg = self.generate_slack_msg(stream_df)
         logger.info(msg)
 
