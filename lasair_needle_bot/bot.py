@@ -56,14 +56,27 @@ class LasairNeedleBot(WebClient):
 *##########################################*
 \n"""
         for i, row in stream_dataframe.iterrows():
+            host_sentence = f"This transient is {row.host_separation}\" from {row.host_table_name} {row.host_object_id}.\n"
+            if row.z != 0:
+                host_sentence += f"This host is at a {row.ztype} of {row.z}"
+                if row.ztype == "photo-z":
+                    host_sentence += f" +/- {row.zerr}"
+            else:
+                host_sentence += "This host does not have a know redshift in Lasair Sherlock. Check SAGUARO!"
+
+            tns_name = ""
+            if not pd.isna(row.tns_name):
+                tns_name = f"(TNS Name: <https://wis-tns.org/object/{row.tns_name}|{row.tns_prefix} {row.tns_name}>" 
+            
             out += f"""
->_Name_: {row.objectId}
+>_Name_: {row.objectId} {tns_name}
+>(ra, dec) = ({row.ramean}, {dec.ramean})
+>{host_sentence}
 >\tP(TDE) = {row.p_tde}
 >\tDays since Discovery = {row.days_disc}
 >\tLatest {row.band} = {row.mag_latest}
 >\tg-r = {row.g_minus_r}
->\tOther Notes: {row.explanation}
->\tClassified On {row.UTC}
+>\tAlert sent at {row.UTC}
 >\t<https://lasair-ztf.lsst.ac.uk/objects/{row.objectId}/|Lasair>
 >\t<https://sand.as.arizona.edu/saguaro_tom/targets/search/?name={row.objectId}|SAGUARO>
 """
