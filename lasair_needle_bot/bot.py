@@ -77,6 +77,7 @@ class LasairNeedleBot(WebClient):
 >\tDays since Discovery = {row.days_disc}
 >\tLatest {row.band} = {row.mag_latest}
 >\tg-r = {row.g_minus_r}
+>\tMags Faded = {row.mags_faded} (positive=fading, 0=still rising)
 >\tNEEDLE Classification from {row.timestamp}
 >\t<https://lasair-ztf.lsst.ac.uk/objects/{row.objectId}/|Lasair>
 >\t<https://sand.as.arizona.edu/saguaro_tom/targets/search/?name={row.objectId}|SAGUARO>
